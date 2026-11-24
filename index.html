@@ -1,0 +1,2207 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#090e1a" />
+  <title>Inventario Costo | Dpto. 93 y Dpto. 94</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+  <style>
+    :root {
+      --bg-app: #eef2f6;
+      --bg-card: #ffffff;
+      --bg-subtle: #f8fafc;
+      --header-bg: #0b1120;
+      --header-surface: rgba(30, 41, 59, 0.85);
+      --header-border: rgba(148, 163, 184, 0.18);
+      --primary: #2563eb;
+      --primary-soft: #eff6ff;
+      --d93-accent: #e11d48;
+      --d94-accent: #059669;
+      --deposito-color: #f59e0b;
+      --piso-color: #10b981;
+      --danger: #ef4444;
+      --success: #10b981;
+      --amber-soft: #fef3c7;
+      --amber-dark: #b45309;
+      --text-main: #0f172a;
+      --text-secondary: #334155;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --radius-lg: 16px;
+      --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06);
+      --shadow-md: 0 8px 20px -6px rgba(15, 23, 42, 0.1);
+      --shadow-lg: 0 20px 35px -8px rgba(15, 23, 42, 0.25);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-app);
+      background-image: radial-gradient(#cbd5e1 0.7px, transparent 0.7px);
+      background-size: 18px 18px;
+      color: var(--text-main);
+      padding-bottom: 64px;
+      overflow-x: hidden;
+    }
+
+    .app-header {
+      background: linear-gradient(180deg, #090e1a 0%, #111827 100%);
+      color: #fff;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--header-border);
+      box-shadow: 0 10px 25px -5px rgba(2, 6, 23, 0.35);
+    }
+
+    .header-inner {
+      max-width: 1080px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      flex: 1 1 220px;
+    }
+
+    .brand-badge {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      color: #fff;
+      font-weight: 800;
+      font-size: 0.95rem;
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.38);
+    }
+
+    .brand h1 {
+      font-size: 1.02rem;
+      font-weight: 800;
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+    }
+
+    .brand .subtitle {
+      font-size: 0.72rem;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+      align-items: center;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-weight: 600;
+      font-size: 0.8rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      transition: 0.15s ease;
+    }
+
+    .btn:active { transform: scale(0.96); }
+    .btn-primary { background: linear-gradient(135deg, #3b82f6, #2563eb); color: #fff; }
+    .btn-secondary { background: #e2e8f0; color: var(--text-main); }
+    .btn-success { background: linear-gradient(135deg, #22c55e, #16a34a); color: #fff; }
+    .btn-ghost {
+      background: rgba(148, 163, 184, 0.14);
+      color: #e2e8f0;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+    }
+    .btn-danger-outline {
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(248, 113, 113, 0.35);
+      color: #fca5a5;
+    }
+
+    /* Selector Principal de Módulos: Dpto 93 y Dpto 94 */
+    .module-switcher {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      background: rgba(15, 23, 42, 0.88);
+      padding: 5px;
+      border-radius: 14px;
+      border: 1px solid var(--header-border);
+    }
+
+    .module-btn {
+      background: transparent;
+      color: #cbd5e1;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      padding: 10px 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      text-align: left;
+      transition: 0.15s ease;
+    }
+
+    .module-btn .mod-title {
+      font-size: 0.84rem;
+      font-weight: 800;
+      display: block;
+    }
+
+    .module-btn .mod-sub {
+      font-size: 0.68rem;
+      opacity: 0.8;
+      display: block;
+    }
+
+    .module-btn .mod-pill {
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.1);
+      white-space: nowrap;
+    }
+
+    .module-btn.active[data-module="d93"] {
+      background: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
+      color: #fff;
+      box-shadow: 0 6px 16px rgba(225, 29, 72, 0.35);
+    }
+
+    .module-btn.active[data-module="d94"] {
+      background: linear-gradient(135deg, #059669 0%, #047857 100%);
+      color: #fff;
+      box-shadow: 0 6px 16px rgba(5, 150, 105, 0.35);
+    }
+
+    .app-main {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 14px;
+    }
+
+    .home-banner {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 14px 16px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .home-banner h2 { font-size: 0.96rem; font-weight: 800; color: var(--text-main); }
+    .home-banner p { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+
+    .modules-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+
+    @media (min-width: 760px) {
+      .modules-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    .module-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      box-shadow: var(--shadow-md);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .module-card.d93 { border-top: 5px solid var(--d93-accent); }
+    .module-card.d94 { border-top: 5px solid var(--d94-accent); }
+
+    .module-tag {
+      font-size: 0.68rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 3px 8px;
+      border-radius: 999px;
+      display: inline-block;
+      margin-bottom: 6px;
+    }
+
+    .d93 .module-tag { background: #ffe4e6; color: #be123c; }
+    .d94 .module-tag { background: #d1fae5; color: #047857; }
+
+    .module-card h3 { font-size: 1.15rem; font-weight: 800; color: var(--text-main); }
+    .module-card p { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; line-height: 1.4; }
+
+    .module-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .module-stats span { font-size: 0.68rem; color: var(--text-muted); display: block; }
+    .module-stats strong { font-size: 0.95rem; font-weight: 800; color: var(--text-main); margin-top: 2px; display: block; }
+
+    /* ================= ESTILOS MÓDULO DPTO 93 (CARNES) ================= */
+    .d93-shell {
+      background: #0f172a;
+      color: #f8fafc;
+      border-radius: var(--radius-lg);
+      padding: 14px;
+      border: 1px solid #1e293b;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .d93-area-switcher {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      background: #020617;
+      padding: 5px;
+      border-radius: 12px;
+      border: 1px solid #334155;
+    }
+
+    .d93-area-btn {
+      border: none;
+      background: transparent;
+      color: #94a3b8;
+      padding: 9px 10px;
+      border-radius: 9px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: 0.15s ease;
+    }
+
+    .d93-area-btn.active[data-d93area="deposito"] {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #fff;
+    }
+
+    .d93-area-btn.active[data-d93area="piso"] {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+    }
+
+    .d93-area-badge {
+      background: rgba(0, 0, 0, 0.28);
+      padding: 1px 7px;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+
+    .d93-area-banner {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+    }
+
+    .d93-banner-deposito {
+      background: rgba(245, 158, 11, 0.14);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: #fde68a;
+    }
+
+    .d93-banner-piso {
+      background: rgba(16, 185, 129, 0.14);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #a7f3d0;
+    }
+
+    .d93-subnav {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 4px;
+      gap: 4px;
+    }
+
+    .d93-subtab {
+      border: none;
+      background: transparent;
+      color: #94a3b8;
+      padding: 9px 10px;
+      border-radius: 9px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .d93-subtab.active {
+      background: #e11d48;
+      color: #fff;
+    }
+
+    .d93-panel {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 14px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .d93-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #94a3b8;
+    }
+
+    .d93-input, .d93-select {
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid #475569;
+      color: #f8fafc;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 0.9rem;
+    }
+
+    .d93-input:focus, .d93-select:focus {
+      outline: none;
+      border-color: #f43f5e;
+    }
+
+    .d93-kilo-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .d93-kilo-input {
+      flex: 1;
+      background: #0f172a;
+      border: 2px solid #475569;
+      color: #fff;
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 1.5rem;
+      font-weight: 800;
+      text-align: right;
+      min-width: 0;
+    }
+
+    .d93-kilo-input:focus {
+      outline: none;
+      border-color: #22c55e;
+    }
+
+    .d93-quick-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+
+    .d93-quick-btn {
+      background: #334155;
+      color: #e2e8f0;
+      border: none;
+      border-radius: 8px;
+      padding: 7px 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .d93-quick-btn:hover { background: #475569; }
+
+    .d93-box-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 9px 12px;
+      font-size: 0.85rem;
+    }
+
+    .d93-table-wrap {
+      overflow-x: auto;
+      background: #0f172a;
+      border-radius: 12px;
+      border: 1px solid #334155;
+    }
+
+    .d93-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.78rem;
+    }
+
+    .d93-table th, .d93-table td {
+      padding: 8px 8px;
+      border-bottom: 1px solid #1e293b;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    .d93-table th {
+      color: #94a3b8;
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      background: #1e293b;
+    }
+
+    .d93-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+    .d93-table .center { text-align: center; }
+
+    /* ================= ESTILOS MÓDULO DPTO 94 ================= */
+    .d94-shell { display: flex; flex-direction: column; gap: 12px; }
+
+    .d94-top-bar {
+      background: linear-gradient(180deg, #090e1a 0%, #111827 100%);
+      color: #fff;
+      border-radius: var(--radius-lg);
+      padding: 14px;
+      border: 1px solid var(--header-border);
+      box-shadow: var(--shadow-md);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .kpi-bar {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+    }
+
+    @media (min-width: 640px) {
+      .kpi-bar { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    }
+
+    .kpi-card {
+      background: var(--header-surface);
+      border: 1px solid var(--header-border);
+      padding: 8px;
+      border-radius: 10px;
+      text-align: center;
+      min-width: 0;
+    }
+
+    .kpi-label {
+      display: block;
+      font-size: 0.62rem;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .kpi-value {
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: #f8fafc;
+      font-variant-numeric: tabular-nums;
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      margin-top: 2px;
+    }
+
+    .tabs-nav {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px;
+      background: rgba(15, 23, 42, 0.85);
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid var(--header-border);
+    }
+
+    .tab-btn {
+      background: transparent;
+      color: #94a3b8;
+      border: none;
+      padding: 8px 6px;
+      border-radius: 9px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      min-width: 0;
+    }
+
+    .tab-btn.active[data-d94tab="deposito"] { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; }
+    .tab-btn.active[data-d94tab="piso"] { background: linear-gradient(135deg, #10b981, #059669); color: #fff; }
+    .tab-btn.active[data-d94tab="resumen"] { background: linear-gradient(135deg, #3b82f6, #2563eb); color: #fff; }
+
+    .tab-badge {
+      background: rgba(0, 0, 0, 0.28);
+      padding: 1px 6px;
+      border-radius: 999px;
+      font-size: 0.68rem;
+      font-weight: 700;
+    }
+
+    .controls-bar { display: flex; flex-direction: column; gap: 6px; }
+    @media (min-width: 720px) {
+      .controls-bar { flex-direction: row; align-items: center; gap: 8px; }
+      .search-box { flex: 1.2; }
+      .filter-row { flex: 1; }
+    }
+
+    .search-box { position: relative; display: flex; align-items: center; }
+    .search-icon { position: absolute; left: 11px; font-size: 0.82rem; pointer-events: none; }
+
+    #d94-search-input {
+      width: 100%;
+      padding: 8px 32px;
+      border-radius: 10px;
+      border: 1px solid var(--header-border);
+      background: rgba(30, 41, 59, 0.92);
+      color: #fff;
+      font-size: 0.86rem;
+    }
+
+    #d94-search-input::placeholder { color: #94a3b8; }
+
+    .clear-btn {
+      position: absolute;
+      right: 8px;
+      background: rgba(148, 163, 184, 0.2);
+      border: none;
+      color: #e2e8f0;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .filter-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+
+    .d94-select {
+      background: rgba(30, 41, 59, 0.92);
+      color: #f8fafc;
+      border: 1px solid var(--header-border);
+      border-radius: 10px;
+      padding: 8px;
+      font-size: 0.78rem;
+      min-width: 0;
+    }
+
+    .section-banner {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .section-banner-icon {
+      font-size: 1.15rem;
+      background: rgba(255, 255, 255, 0.75);
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+
+    .banner-deposito { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+    .banner-piso { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+
+    .items-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+    @media (min-width: 720px) { .items-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; } }
+
+    .item-card {
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      padding: 12px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border);
+      border-left: 5px solid #cbd5e1;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      min-width: 0;
+    }
+
+    .item-card.counted {
+      border-left-color: var(--success);
+      background: linear-gradient(180deg, #ffffff 0%, #f0fdf4 100%);
+    }
+
+    .item-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+    .item-title { font-size: 0.92rem; font-weight: 700; color: var(--text-main); word-break: break-word; }
+    .item-codes { font-size: 0.72rem; color: var(--text-muted); margin-top: 3px; }
+    .item-codes strong { color: var(--text-secondary); background: #f1f5f9; padding: 1px 5px; border-radius: 5px; }
+    .item-cat { font-size: 0.64rem; font-weight: 600; background: #f1f5f9; color: #475569; padding: 2px 7px; border-radius: 6px; display: inline-block; margin-top: 5px; }
+
+    .card-top-actions { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; flex-shrink: 0; }
+
+    .box-factor-btn {
+      height: 28px;
+      padding: 0 8px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: var(--text-secondary);
+      font-size: 0.7rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .box-factor-btn.custom {
+      background: var(--amber-soft);
+      border-color: #f59e0b;
+      color: var(--amber-dark);
+    }
+
+    .calc-btn {
+      height: 30px;
+      padding: 0 9px;
+      border-radius: 8px;
+      border: 1px solid #bfdbfe;
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-size: 0.72rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .unit-selector {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px;
+      background: #f1f5f9;
+      padding: 3px;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .unit-pill {
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 6px 4px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .unit-pill.active {
+      background: #ffffff;
+      color: var(--primary);
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+    }
+
+    .unit-breakdown {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px;
+      font-size: 0.69rem;
+      color: var(--text-muted);
+      text-align: center;
+      background: #f8fafc;
+      padding: 6px;
+      border-radius: 8px;
+      border: 1px dashed #cbd5e1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .unit-breakdown strong { color: var(--text-main); }
+
+    .item-metrics {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+      background: var(--bg-subtle);
+      border: 1px solid #edf2f7;
+      padding: 7px 8px;
+      border-radius: 10px;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    .item-metrics span strong { display: block; font-size: 0.84rem; color: var(--text-main); margin-top: 1px; }
+
+    .count-controls { display: flex; align-items: center; gap: 6px; }
+    .step-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 11px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      font-size: 1.25rem;
+      font-weight: 700;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .qty-input {
+      flex: 1;
+      height: 42px;
+      text-align: center;
+      font-size: 1.05rem;
+      font-weight: 800;
+      border: 2px solid #cbd5e1;
+      border-radius: 11px;
+      width: 100%;
+      min-width: 0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .qty-input:focus { outline: none; border-color: var(--primary); }
+
+    .item-footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 0.73rem;
+      color: var(--text-muted);
+      border-top: 1px dashed var(--border);
+      padding-top: 7px;
+    }
+
+    .summary-cards {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    @media (min-width: 640px) {
+      .summary-cards { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    }
+
+    .sum-box {
+      background: #fff;
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .sum-box h4 { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; }
+    .sum-box p { font-size: 1.05rem; font-weight: 800; margin-top: 4px; }
+
+    .table-wrapper {
+      background: #fff;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      overflow-x: auto;
+      box-shadow: var(--shadow-md);
+    }
+
+    .summary-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+    .summary-table th, .summary-table td { padding: 9px 10px; border-bottom: 1px solid var(--border); text-align: left; }
+    .summary-table th { background: #f8fafc; font-weight: 700; white-space: nowrap; }
+    .summary-table .num { text-align: right; white-space: nowrap; }
+
+    /* Modales */
+    .modal { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 14px; }
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(9, 14, 26, 0.65); backdrop-filter: blur(4px); }
+    .modal-content { position: relative; background: #fff; color: var(--text-main); width: 100%; max-width: 410px; border-radius: 18px; padding: 18px; z-index: 101; box-shadow: var(--shadow-lg); }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .close-modal-btn { background: #f1f5f9; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-weight: 700; }
+    .modal-meta { font-size: 0.76rem; color: var(--text-muted); margin-bottom: 12px; }
+    .calc-grid { display: flex; flex-direction: column; gap: 10px; }
+    .calc-field label { display: block; font-size: 0.76rem; font-weight: 600; margin-bottom: 4px; }
+    .calc-field input { width: 100%; padding: 9px 12px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-size: 1rem; font-weight: 700; }
+    .calc-preview { margin-top: 12px; padding: 10px 12px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; }
+    .preview-num { font-size: 1.2rem; font-weight: 800; color: var(--primary); }
+    .modal-footer { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0f172a;
+      color: #fff;
+      padding: 10px 16px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      z-index: 200;
+      white-space: nowrap;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="header-top">
+        <div class="brand">
+          <div class="brand-badge">IC</div>
+          <div>
+            <h1>Inventario Costo</h1>
+            <p class="subtitle">Portal de Conteo por Departamento · Local 155</p>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button type="button" id="btn-go-home" class="btn btn-ghost">🏠 Módulos</button>
+          <button type="button" id="btn-export-ambos" class="btn btn-success">📥 Excel General</button>
+        </div>
+      </div>
+
+      <nav class="module-switcher" aria-label="Seleccionar Departamento">
+        <button type="button" class="module-btn" data-module="d93" id="mod-btn-d93">
+          <div>
+            <span class="mod-title">🥩 Departamento 93</span>
+            <span class="mod-sub">Carnicería · Depósito y Piso de Venta</span>
+          </div>
+          <span class="mod-pill" id="mod-pill-d93">0 cajas</span>
+        </button>
+
+        <button type="button" class="module-btn" data-module="d94" id="mod-btn-d94">
+          <div>
+            <span class="mod-title">🥬 Departamento 94</span>
+            <span class="mod-sub">Frutas y Verduras · Depósito y Piso</span>
+          </div>
+          <span class="mod-pill" id="mod-pill-d94">0 / 70</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="app-main">
+    <!-- VISTA INICIAL / PORTAL -->
+    <section id="view-home">
+      <div class="home-banner">
+        <div>
+          <h2>Selecciona el módulo de inventario</h2>
+          <p>Ambos departamentos cuentan con separación por <strong>Depósito</strong> y <strong>Piso de Venta</strong> y exportación a Excel.</p>
+        </div>
+        <div id="home-total-costo" style="font-size:1rem;font-weight:800;color:#0f172a;">Costo Total: $0</div>
+      </div>
+
+      <div class="modules-grid">
+        <article class="module-card d93">
+          <div>
+            <span class="module-tag">Módulo 01 · Vacuno / Carnicería</span>
+            <h3>Departamento 93</h3>
+            <p>Conteo separado por <strong>Depósito</strong> y <strong>Piso de Venta</strong> en kilos (KG), buscador de cortes, agregado de cortes nuevos y cálculo de costo.</p>
+          </div>
+          <div class="module-stats">
+            <div><span>Cajas</span><strong id="home-d93-cajas">0</strong></div>
+            <div><span>Total Kg</span><strong id="home-d93-kg">0.00</strong></div>
+            <div><span>Costo ($)</span><strong id="home-d93-costo">$0</strong></div>
+          </div>
+          <button type="button" class="btn btn-primary" style="background:linear-gradient(135deg,#e11d48,#be123c);" onclick="seleccionarModulo('d93')">
+            Abrir Departamento 93 →
+          </button>
+        </article>
+
+        <article class="module-card d94">
+          <div>
+            <span class="module-tag">Módulo 02 · Frutas y Verduras</span>
+            <h3>Departamento 94</h3>
+            <p>Conteo físico separado por <strong>Depósito</strong> y <strong>Piso de Venta</strong> en Caja, Kg o Unidad, con calculadora mixta y ajuste de caja.</p>
+          </div>
+          <div class="module-stats">
+            <div><span>Avance</span><strong id="home-d94-avance">0 / 70</strong></div>
+            <div><span>Total Físico</span><strong id="home-d94-fisico">0</strong></div>
+            <div><span>Costo ($)</span><strong id="home-d94-costo">$0</strong></div>
+          </div>
+          <button type="button" class="btn btn-success" onclick="seleccionarModulo('d94')">
+            Abrir Departamento 94 →
+          </button>
+        </article>
+      </div>
+    </section>
+
+    <!-- ==================== MÓDULO DEPARTAMENTO 93 ==================== -->
+    <section id="view-d93" class="d93-shell hidden">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+        <div>
+          <h2 style="font-size:1.05rem;font-weight:800;color:#fff;">🥩 Departamento 93 — Carnicería y Bodega</h2>
+          <p style="font-size:0.74rem;color:#94a3b8;">Conteo por Depósito y Piso de Venta · Desarrollado por Emanuel Valdés</p>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <button type="button" class="btn btn-success" onclick="exportarExcelD93()">📥 Excel Dpto. 93</button>
+          <button type="button" class="btn btn-danger-outline" onclick="confirmarBorrarTodoD93()">🗑️ Resetear</button>
+        </div>
+      </div>
+
+      <!-- Selector Depósito / Piso de Venta en Dpto. 93 -->
+      <div class="d93-area-switcher" role="tablist" aria-label="Área de conteo Departamento 93">
+        <button type="button" class="d93-area-btn active" data-d93area="deposito" id="d93-area-btn-deposito" onclick="cambiarAreaD93('deposito')">
+          📦 Depósito <span class="d93-area-badge" id="d93-badge-deposito">0 cajas</span>
+        </button>
+        <button type="button" class="d93-area-btn" data-d93area="piso" id="d93-area-btn-piso" onclick="cambiarAreaD93('piso')">
+          🛒 Piso de Venta <span class="d93-area-badge" id="d93-badge-piso">0 cajas</span>
+        </button>
+      </div>
+
+      <div id="d93-area-banner" class="d93-area-banner d93-banner-deposito">
+        <span id="d93-area-banner-icon" style="font-size:1.1rem;">📦</span>
+        <div id="d93-area-banner-text"><strong>Área activa: DEPÓSITO</strong> — Las cajas y kilos que registres se guardarán en <strong>Depósito</strong>.</div>
+      </div>
+
+      <div class="d93-subnav">
+        <button type="button" class="d93-subtab active" id="d93-tab-peso" onclick="cambiarSubtabD93('peso')">⚖️ Ingreso de Peso</button>
+        <button type="button" class="d93-subtab" id="d93-tab-resumen" onclick="cambiarSubtabD93('resumen')">📊 Resumen Costos</button>
+      </div>
+
+      <!-- D93: Subpestaña Ingreso de Peso -->
+      <div id="d93-subview-peso" style="display:flex;flex-direction:column;gap:12px;">
+        <div class="d93-panel">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span class="d93-label">Corte Seleccionado</span>
+            <button type="button" onclick="abrirModalNuevoCorte()" style="background:none;border:none;color:#fb7185;font-size:0.78rem;font-weight:700;cursor:pointer;">+ Agregar Otro</button>
+          </div>
+          <div style="position:relative;">
+            <input type="text" id="d93-buscar-corte" class="d93-input" oninput="filtrarCortesD93()" onkeydown="manejarTeclaBuscadorD93(event)" placeholder="Buscar corte (ej: Abastero, Lomo, Posta...)" />
+            <button type="button" id="d93-limpiar-busqueda" onclick="limpiarBuscadorCorteD93()" class="clear-btn hidden" style="top:50%;transform:translateY(-50%);">✕</button>
+          </div>
+          <select id="d93-select-corte" class="d93-select" style="font-size:1rem;font-weight:700;" onchange="actualizarCorteActivoD93()"></select>
+        </div>
+
+        <div class="d93-panel">
+          <span class="d93-label" id="d93-label-peso-area">Confirmación de Peso Neto (KG) · Depósito</span>
+          <div class="d93-kilo-row">
+            <input type="number" id="d93-input-kilos" class="d93-kilo-input" step="0.001" inputmode="decimal" placeholder="0.000" />
+            <button type="button" onclick="agregarCajaDesdeInputD93()" class="btn btn-success" style="height:54px;width:58px;font-size:1.5rem;font-weight:800;">+</button>
+          </div>
+          <div class="d93-quick-grid">
+            <button type="button" class="d93-quick-btn" onclick="ajustarInputD93(10)">+10 kg</button>
+            <button type="button" class="d93-quick-btn" onclick="ajustarInputD93(1)">+1 kg</button>
+            <button type="button" class="d93-quick-btn" onclick="ajustarInputD93(0.1)">+100 g</button>
+            <button type="button" class="d93-quick-btn" style="color:#fca5a5;" onclick="limpiarInputD93()">Borrar</button>
+          </div>
+        </div>
+
+        <div class="d93-panel" style="flex-direction:row;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+          <div>
+            <h3 id="d93-corte-titulo" style="font-size:1rem;font-weight:800;color:#fff;">-</h3>
+            <p id="d93-corte-subarea" style="font-size:0.74rem;color:#94a3b8;">En Depósito: 0.00 kg (0 cajas) · En Piso de Venta: 0.00 kg (0 cajas)</p>
+          </div>
+          <div style="text-align:right;">
+            <span id="d93-corte-kilos" style="font-size:1.45rem;font-weight:900;color:#4ade80;display:block;">0.00 kg</span>
+            <span id="d93-corte-cajas" style="font-size:0.74rem;color:#94a3b8;">0 Cajas en área activa</span>
+          </div>
+        </div>
+
+        <div class="d93-panel">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span class="d93-label" id="d93-label-lista-area">Cajas de este corte en Depósito</span>
+            <button type="button" onclick="vaciarCajasDeCorteActivoD93()" style="background:none;border:none;color:#f87171;font-size:0.75rem;font-weight:600;cursor:pointer;">Vaciar Área</button>
+          </div>
+          <div id="d93-lista-cajas" style="display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto;"></div>
+        </div>
+      </div>
+
+      <!-- D93: Subpestaña Resumen Costos -->
+      <div id="d93-subview-resumen" class="hidden" style="display:flex;flex-direction:column;gap:12px;">
+        <div class="d93-panel">
+          <span class="d93-label">Gran Total Departamento 93 (Depósito + Piso de Venta)</span>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:4px;">
+            <div style="background:#0f172a;padding:10px;border-radius:10px;border:1px solid #334155;">
+              <span style="font-size:0.68rem;color:#94a3b8;display:block;">Cajas Totales</span>
+              <strong id="d93-total-cajas" style="font-size:1.2rem;font-weight:900;">0</strong>
+            </div>
+            <div style="background:#0f172a;padding:10px;border-radius:10px;border:1px solid #334155;">
+              <span style="font-size:0.68rem;color:#94a3b8;display:block;">Depósito (Kg)</span>
+              <strong id="d93-total-kg-dep" style="font-size:1.1rem;font-weight:800;color:#fbbf24;">0.00</strong>
+            </div>
+            <div style="background:#0f172a;padding:10px;border-radius:10px;border:1px solid #334155;">
+              <span style="font-size:0.68rem;color:#94a3b8;display:block;">Piso Venta (Kg)</span>
+              <strong id="d93-total-kg-piso" style="font-size:1.1rem;font-weight:800;color:#34d399;">0.00</strong>
+            </div>
+          </div>
+          <div style="background:#0f172a;padding:12px;border-radius:10px;border:1px solid rgba(16,185,129,0.35);display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
+            <div>
+              <span style="font-size:0.7rem;color:#94a3b8;display:block;">Total Kilos: <strong id="d93-total-kilos" style="color:#4ade80;">0.00 kg</strong> · Valorización Total</span>
+              <strong id="d93-total-costo" style="font-size:1.35rem;font-weight:900;color:#34d399;">$0</strong>
+            </div>
+            <span style="font-size:1.4rem;">💵</span>
+          </div>
+        </div>
+
+        <div class="d93-panel">
+          <span class="d93-label">Detalle por Corte (Depósito / Piso de Venta / Total)</span>
+          <div class="d93-table-wrap">
+            <table class="d93-table">
+              <thead>
+                <tr>
+                  <th>Corte</th>
+                  <th class="center">Caj.</th>
+                  <th class="num">Dep. Kg</th>
+                  <th class="num">Piso Kg</th>
+                  <th class="num">Tot. Kg</th>
+                  <th class="num">$/Kg</th>
+                  <th class="num">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody id="d93-tabla-resumen"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== MÓDULO DEPARTAMENTO 94 ==================== -->
+    <section id="view-d94" class="d94-shell hidden">
+      <div class="d94-top-bar">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+          <div>
+            <h2 style="font-size:1.02rem;font-weight:800;color:#fff;">🥬 Departamento 94 — Frutas y Verduras</h2>
+            <p style="font-size:0.73rem;color:#94a3b8;">Conteo físico limpio (sin stock del sistema) · Local 155</p>
+          </div>
+          <div style="display:flex;gap:6px;">
+            <button type="button" id="d94-btn-export" class="btn btn-success">📥 Excel Dpto. 94</button>
+            <button type="button" id="d94-btn-reset" class="btn btn-danger-outline">🗑️ Resetear</button>
+          </div>
+        </div>
+
+        <div class="kpi-bar">
+          <div class="kpi-card"><span class="kpi-label">Avance</span><span class="kpi-value" id="d94-kpi-avance">0 / 70</span></div>
+          <div class="kpi-card"><span class="kpi-label">Total Físico</span><span class="kpi-value" id="d94-kpi-total-fisico">0</span></div>
+          <div class="kpi-card"><span class="kpi-label">Costo Contado</span><span class="kpi-value" id="d94-kpi-costo-contado">$0</span></div>
+        </div>
+
+        <div class="tabs-nav" role="tablist">
+          <button type="button" class="tab-btn active" data-d94tab="deposito">📦 Depósito <span class="tab-badge" id="d94-badge-deposito">0</span></button>
+          <button type="button" class="tab-btn" data-d94tab="piso">🛒 Piso de Ventas <span class="tab-badge" id="d94-badge-piso">0</span></button>
+          <button type="button" class="tab-btn" data-d94tab="resumen">📊 Resumen <span class="tab-badge" id="d94-badge-resumen">70</span></button>
+        </div>
+
+        <div class="controls-bar">
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="search" id="d94-search-input" placeholder="Buscar por descripción, ITEM o UPC..." autocomplete="off" />
+            <button type="button" id="d94-clear-search" class="clear-btn hidden">✕</button>
+          </div>
+          <div class="filter-row">
+            <select id="d94-category-filter" class="d94-select"><option value="ALL">Todas las categorías</option></select>
+            <select id="d94-status-filter" class="d94-select">
+              <option value="ALL">Todos los ítems</option>
+              <option value="PENDING">Pendientes por contar</option>
+              <option value="COUNTED">Ya contados</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div id="d94-section-banner" class="section-banner banner-deposito">
+        <span class="section-banner-icon" id="d94-banner-icon">📦</span>
+        <div id="d94-banner-text"><strong>Modo Conteo: DEPÓSITO</strong> — Marca <strong>Caja</strong>, <strong>Kg</strong> o <strong>Unidad</strong> y anota el conteo físico real.</div>
+      </div>
+
+      <section id="d94-count-list" class="items-grid"></section>
+
+      <section id="d94-summary-view" class="hidden">
+        <div class="summary-cards">
+          <div class="sum-box"><h4>Total Unid. Físico</h4><p id="d94-sum-unid-fis">0</p></div>
+          <div class="sum-box"><h4>Depósito ($)</h4><p id="d94-sum-costo-dep">$0</p></div>
+          <div class="sum-box"><h4>Piso Ventas ($)</h4><p id="d94-sum-costo-piso">$0</p></div>
+        </div>
+        <div class="table-wrapper">
+          <table class="summary-table">
+            <thead>
+              <tr>
+                <th>Ítem / Descripción</th>
+                <th class="num">Dep.</th>
+                <th class="num">Piso</th>
+                <th class="num">Total Fís.</th>
+                <th class="num">Costo Unit.</th>
+                <th class="num">Costo Total ($)</th>
+              </tr>
+            </thead>
+            <tbody id="d94-summary-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <!-- MODAL NUEVO CORTE (DPTO 93) -->
+  <div id="modal-nuevo-corte" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-backdrop" onclick="cerrarModalNuevoCorte()"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Nuevo Corte (Dpto. 93)</h3>
+        <button type="button" onclick="cerrarModalNuevoCorte()" class="close-modal-btn">✕</button>
+      </div>
+      <div class="calc-field">
+        <label for="input-nuevo-corte">Nombre del Corte</label>
+        <input type="text" id="input-nuevo-corte" placeholder="Ej: Tomahawk, Entrecot..." />
+      </div>
+      <div class="modal-footer">
+        <button type="button" onclick="cerrarModalNuevoCorte()" class="btn btn-secondary">Cancelar</button>
+        <button type="button" onclick="guardarNuevoCorteD93()" class="btn btn-primary" style="background:#e11d48;">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL CALCULADORA MIXTA (DPTO 94) -->
+  <div id="d94-calc-modal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-backdrop" id="d94-calc-backdrop"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="d94-modal-item-title">Calculadora de Conteo</h3>
+        <button type="button" id="d94-close-modal" class="close-modal-btn">✕</button>
+      </div>
+      <p class="modal-meta" id="d94-modal-item-meta"></p>
+      <div class="calc-grid">
+        <div class="calc-field"><label for="d94-calc-cajas">Cantidad de Cajas / Bultos</label><input type="number" id="d94-calc-cajas" inputmode="decimal" step="any" placeholder="0" /></div>
+        <div class="calc-field"><label for="d94-calc-factor">Unid/Kg por Caja (editable)</label><input type="number" id="d94-calc-factor" inputmode="decimal" step="any" /></div>
+        <div class="calc-field"><label for="d94-calc-sueltas">+ Unidades / Kilos Sueltos</label><input type="number" id="d94-calc-sueltas" inputmode="decimal" step="any" placeholder="0" /></div>
+      </div>
+      <div class="calc-preview">
+        <span>Total en <strong id="d94-modal-section-name">Depósito</strong>:</span>
+        <strong id="d94-calc-total-preview" class="preview-num">0</strong>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="d94-btn-calc-replace" class="btn btn-secondary">Reemplazar valor</button>
+        <button type="button" id="d94-btn-calc-add" class="btn btn-primary">+ Sumar al conteo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL EDITAR CANTIDAD POR CAJA (DPTO 94) -->
+  <div id="d94-box-modal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-backdrop" id="d94-box-backdrop"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="d94-box-modal-title">Cantidad por Caja</h3>
+        <button type="button" id="d94-close-box-modal" class="close-modal-btn">✕</button>
+      </div>
+      <p class="modal-meta" id="d94-box-modal-meta"></p>
+      <div class="calc-field">
+        <label for="d94-box-custom-factor">Unidades o Kg que trae cada caja hoy</label>
+        <input type="number" id="d94-box-custom-factor" inputmode="decimal" step="any" min="0.01" placeholder="Ej: 12" />
+      </div>
+      <div class="calc-preview">
+        <span>Valor en Maestra:</span>
+        <strong id="d94-box-maestra-ref" class="preview-num">0</strong>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="d94-btn-box-restore" class="btn btn-secondary">Usar Maestra</button>
+        <button type="button" id="d94-btn-box-save" class="btn btn-primary">Guardar Caja</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="data.js"></script>
+  <script>
+    const fmtCLP = (n) => new Intl.NumberFormat("es-CL", { style: "currency", currency: "CLP", maximumFractionDigits: 0 }).format(Math.round(n || 0));
+    const fmtNum = (n) => new Intl.NumberFormat("es-CL", { maximumFractionDigits: 2 }).format(n || 0);
+
+    function showToast(msg) {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.classList.remove("hidden");
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(() => t.classList.add("hidden"), 2400);
+    }
+
+    // ==================== NAVEGACIÓN ENTRE MÓDULOS ====================
+    let activeModule = "home";
+
+    function seleccionarModulo(mod) {
+      activeModule = mod;
+      document.getElementById("view-home").classList.toggle("hidden", mod !== "home");
+      document.getElementById("view-d93").classList.toggle("hidden", mod !== "d93");
+      document.getElementById("view-d94").classList.toggle("hidden", mod !== "d94");
+
+      document.getElementById("mod-btn-d93").classList.toggle("active", mod === "d93");
+      document.getElementById("mod-btn-d94").classList.toggle("active", mod === "d94");
+
+      if (mod === "home") actualizarHome();
+      if (mod === "d93") {
+        actualizarInterfazD93();
+        renderizarResumenD93();
+      }
+      if (mod === "d94") {
+        actualizarKPIsD94();
+        renderListD94();
+      }
+    }
+
+    function getResumenD93Data() {
+      let cajas = 0, kilos = 0, costo = 0, depCajas = 0, pisoCajas = 0, depKg = 0, pisoKg = 0;
+      Object.values(d93Inventario).forEach((c) => {
+        const dList = c.deposito || [];
+        const pList = c.piso || [];
+        const dK = dList.reduce((acc, item) => acc + item.kilos, 0);
+        const pK = pList.reduce((acc, item) => acc + item.kilos, 0);
+        const totK = dK + pK;
+
+        cajas += dList.length + pList.length;
+        depCajas += dList.length;
+        pisoCajas += pList.length;
+        depKg += dK;
+        pisoKg += pK;
+        kilos += totK;
+        costo += totK * (c.costoKg || 0);
+      });
+      return { cajas, kilos, costo, depCajas, pisoCajas, depKg, pisoKg };
+    }
+
+    function getResumenD94Data() {
+      const lista = typeof MAESTRA_DPTO_94 !== "undefined" ? MAESTRA_DPTO_94 : [];
+      let counted = 0, fisico = 0, costo = 0;
+      lista.forEach((item) => {
+        const dHas = hasSectionCountD94(item.item, "deposito");
+        const pHas = hasSectionCountD94(item.item, "piso");
+        if (dHas || pHas) counted++;
+        const f = getSectionTotalD94(item, "deposito") + getSectionTotalD94(item, "piso");
+        fisico += f;
+        costo += f * item.costo;
+      });
+      return { totalItems: lista.length, counted, fisico, costo };
+    }
+
+    function actualizarHome() {
+      const r93 = getResumenD93Data();
+      const r94 = getResumenD94Data();
+
+      document.getElementById("mod-pill-d93").textContent = `${r93.cajas} cajas`;
+      document.getElementById("mod-pill-d94").textContent = `${r94.counted} / ${r94.totalItems}`;
+
+      document.getElementById("home-d93-cajas").textContent = r93.cajas;
+      document.getElementById("home-d93-kg").textContent = `${r93.kilos.toFixed(2)}`;
+      document.getElementById("home-d93-costo").textContent = fmtCLP(r93.costo);
+
+      document.getElementById("home-d94-avance").textContent = `${r94.counted} / ${r94.totalItems}`;
+      document.getElementById("home-d94-fisico").textContent = fmtNum(r94.fisico);
+      document.getElementById("home-d94-costo").textContent = fmtCLP(r94.costo);
+
+      document.getElementById("home-total-costo").textContent = `Costo Total: ${fmtCLP(r93.costo + r94.costo)}`;
+    }
+
+    // ==================== MÓDULO DPTO 93 (DEPÓSITO + PISO DE VENTA) ====================
+    const D93_STORAGE_KEY = "inventario_costo_dpto93_v2";
+    const CORTES_INICIALES_D93 = [
+      "Abastero", "Asado Carnicero", "Asado de Tira", "Choclillo", "Cordón de Filete",
+      "Entraña", "Filete", "Ganso", "Huachalomo", "Lagarto", "Lomo Liso", "Lomo Vetado",
+      "Malaya", "Plateada", "Posta Negra", "Posta Paleta", "Posta Rosada", "Punta de Ganso",
+      "Punta Picana", "Sobrecostilla", "Tapabarriga", "Tapapecho"
+    ];
+
+    let d93Inventario = {};
+    let d93CorteSeleccionado = "";
+    let d93AreaActiva = "deposito"; // "deposito" | "piso"
+
+    function normalizarCorteD93(entry) {
+      if (!entry) return { deposito: [], piso: [], costoKg: 0 };
+      if (Array.isArray(entry.cajas)) {
+        return {
+          deposito: entry.cajas,
+          piso: [],
+          costoKg: entry.costoKg || 0
+        };
+      }
+      return {
+        deposito: Array.isArray(entry.deposito) ? entry.deposito : [],
+        piso: Array.isArray(entry.piso) ? entry.piso : [],
+        costoKg: entry.costoKg || 0
+      };
+    }
+
+    function initD93() {
+      const raw = localStorage.getItem(D93_STORAGE_KEY) || localStorage.getItem("inventario_costo_dpto93_v1");
+      d93Inventario = {};
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw);
+          Object.keys(parsed).forEach((k) => {
+            d93Inventario[k] = normalizarCorteD93(parsed[k]);
+          });
+        } catch {
+          resetD93Data();
+          return;
+        }
+      } else {
+        resetD93Data();
+        return;
+      }
+      poblarSelectCortesD93();
+      actualizarAreaBannerD93();
+      actualizarInterfazD93();
+    }
+
+    function resetD93Data() {
+      d93Inventario = {};
+      CORTES_INICIALES_D93.forEach((corte) => {
+        d93Inventario[corte] = { deposito: [], piso: [], costoKg: 0 };
+      });
+      guardarD93();
+    }
+
+    function guardarD93() {
+      localStorage.setItem(D93_STORAGE_KEY, JSON.stringify(d93Inventario));
+      actualizarHome();
+    }
+
+    function cambiarAreaD93(area) {
+      d93AreaActiva = area === "piso" ? "piso" : "deposito";
+      document.getElementById("d93-area-btn-deposito").classList.toggle("active", d93AreaActiva === "deposito");
+      document.getElementById("d93-area-btn-piso").classList.toggle("active", d93AreaActiva === "piso");
+      actualizarAreaBannerD93();
+      actualizarInterfazD93();
+    }
+
+    function actualizarAreaBannerD93() {
+      const banner = document.getElementById("d93-area-banner");
+      const icon = document.getElementById("d93-area-banner-icon");
+      const text = document.getElementById("d93-area-banner-text");
+      const areaLabel = d93AreaActiva === "deposito" ? "DEPÓSITO" : "PISO DE VENTA";
+      const areaTitle = d93AreaActiva === "deposito" ? "Depósito" : "Piso de Venta";
+
+      if (d93AreaActiva === "deposito") {
+        banner.className = "d93-area-banner d93-banner-deposito";
+        icon.textContent = "📦";
+        text.innerHTML = `<strong>Área activa: DEPÓSITO</strong> — Las cajas y kilos que registres se guardarán en <strong>Depósito</strong>.`;
+      } else {
+        banner.className = "d93-area-banner d93-banner-piso";
+        icon.textContent = "🛒";
+        text.innerHTML = `<strong>Área activa: PISO DE VENTA</strong> — Las cajas y kilos que registres se guardarán en <strong>Piso de Venta</strong>.`;
+      }
+
+      document.getElementById("d93-label-peso-area").textContent = `Confirmación de Peso Neto (KG) · ${areaLabel}`;
+      document.getElementById("d93-label-lista-area").textContent = `Cajas de este corte en ${areaTitle}`;
+    }
+
+    function cambiarSubtabD93(sub) {
+      const isPeso = sub === "peso";
+      document.getElementById("d93-subview-peso").classList.toggle("hidden", !isPeso);
+      document.getElementById("d93-subview-resumen").classList.toggle("hidden", isPeso);
+      document.getElementById("d93-tab-peso").classList.toggle("active", isPeso);
+      document.getElementById("d93-tab-resumen").classList.toggle("active", !isPeso);
+      if (!isPeso) renderizarResumenD93();
+    }
+
+    function poblarSelectCortesD93(filtro = "") {
+      const select = document.getElementById("d93-select-corte");
+      select.innerHTML = "";
+      const q = filtro.toLowerCase().trim();
+      const nombres = Object.keys(d93Inventario).sort().filter((n) => n.toLowerCase().includes(q));
+
+      if (!nombres.length) {
+        const opt = document.createElement("option");
+        opt.value = "";
+        opt.textContent = "No se encontraron cortes";
+        select.appendChild(opt);
+        return;
+      }
+
+      nombres.forEach((n) => {
+        const opt = document.createElement("option");
+        opt.value = n;
+        opt.textContent = n;
+        select.appendChild(opt);
+      });
+
+      if (nombres.includes(d93CorteSeleccionado)) {
+        select.value = d93CorteSeleccionado;
+      } else {
+        d93CorteSeleccionado = nombres[0];
+        select.value = d93CorteSeleccionado;
+      }
+      actualizarInterfazD93();
+    }
+
+    function filtrarCortesD93() {
+      const inp = document.getElementById("d93-buscar-corte");
+      document.getElementById("d93-limpiar-busqueda").classList.toggle("hidden", !inp.value.trim());
+      poblarSelectCortesD93(inp.value);
+    }
+
+    function limpiarBuscadorCorteD93() {
+      const inp = document.getElementById("d93-buscar-corte");
+      inp.value = "";
+      filtrarCortesD93();
+      inp.focus();
+    }
+
+    function manejarTeclaBuscadorD93(e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        actualizarCorteActivoD93();
+        document.getElementById("d93-input-kilos").focus();
+      }
+    }
+
+    function actualizarCorteActivoD93() {
+      const val = document.getElementById("d93-select-corte").value;
+      if (val) {
+        d93CorteSeleccionado = val;
+        actualizarInterfazD93();
+      }
+    }
+
+    function abrirModalNuevoCorte() {
+      document.getElementById("modal-nuevo-corte").classList.remove("hidden");
+      document.getElementById("input-nuevo-corte").focus();
+    }
+
+    function cerrarModalNuevoCorte() {
+      document.getElementById("modal-nuevo-corte").classList.add("hidden");
+      document.getElementById("input-nuevo-corte").value = "";
+    }
+
+    function guardarNuevoCorteD93() {
+      const nombre = document.getElementById("input-nuevo-corte").value.trim();
+      if (!nombre) return;
+      if (!d93Inventario[nombre]) {
+        d93Inventario[nombre] = { deposito: [], piso: [], costoKg: 0 };
+        guardarD93();
+      }
+      limpiarBuscadorCorteD93();
+      d93CorteSeleccionado = nombre;
+      document.getElementById("d93-select-corte").value = nombre;
+      actualizarInterfazD93();
+      cerrarModalNuevoCorte();
+      showToast(`🥩 Corte "${nombre}" listo`);
+    }
+
+    function agregarCajaD93(kilos) {
+      if (isNaN(kilos) || kilos <= 0) {
+        showToast("⚠️ Ingresa un peso válido en KG");
+        return;
+      }
+      if (!d93Inventario[d93CorteSeleccionado]) {
+        d93Inventario[d93CorteSeleccionado] = { deposito: [], piso: [], costoKg: 0 };
+      }
+      d93Inventario[d93CorteSeleccionado][d93AreaActiva].unshift({
+        id: Date.now() + Math.random(),
+        kilos: parseFloat(kilos.toFixed(3)),
+        hora: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+      });
+      guardarD93();
+      actualizarInterfazD93();
+      limpiarInputD93();
+      const areaTexto = d93AreaActiva === "deposito" ? "Depósito" : "Piso de Venta";
+      showToast(`✅ ${kilos.toFixed(2)} kg agregados a ${areaTexto}`);
+    }
+
+    function agregarCajaDesdeInputD93() {
+      agregarCajaD93(parseFloat(document.getElementById("d93-input-kilos").value));
+    }
+
+    function eliminarCajaD93(id) {
+      if (!d93Inventario[d93CorteSeleccionado]) return;
+      d93Inventario[d93CorteSeleccionado][d93AreaActiva] = d93Inventario[d93CorteSeleccionado][d93AreaActiva].filter((c) => c.id !== id);
+      guardarD93();
+      actualizarInterfazD93();
+    }
+
+    function vaciarCajasDeCorteActivoD93() {
+      if (!d93CorteSeleccionado || !d93Inventario[d93CorteSeleccionado]) return;
+      const areaTexto = d93AreaActiva === "deposito" ? "Depósito" : "Piso de Venta";
+      if (confirm(`¿Vaciar todas las cajas de ${areaTexto} para ${d93CorteSeleccionado}?`)) {
+        d93Inventario[d93CorteSeleccionado][d93AreaActiva] = [];
+        guardarD93();
+        actualizarInterfazD93();
+      }
+    }
+
+    function ajustarInputD93(delta) {
+      const inp = document.getElementById("d93-input-kilos");
+      const actual = parseFloat(inp.value) || 0;
+      inp.value = Math.max(0, actual + delta).toFixed(3);
+    }
+
+    function limpiarInputD93() {
+      document.getElementById("d93-input-kilos").value = "";
+    }
+
+    function actualizarInterfazD93() {
+      const r93 = getResumenD93Data();
+      document.getElementById("d93-badge-deposito").textContent = `${r93.depCajas} cajas`;
+      document.getElementById("d93-badge-piso").textContent = `${r93.pisoCajas} cajas`;
+
+      const corte = d93CorteSeleccionado || "-";
+      document.getElementById("d93-corte-titulo").textContent = corte;
+      const datos = d93Inventario[corte] || { deposito: [], piso: [], costoKg: 0 };
+
+      const depKg = datos.deposito.reduce((s, c) => s + c.kilos, 0);
+      const pisoKg = datos.piso.reduce((s, c) => s + c.kilos, 0);
+      const cajasArea = datos[d93AreaActiva];
+      const kgArea = cajasArea.reduce((s, c) => s + c.kilos, 0);
+
+      document.getElementById("d93-corte-subarea").textContent =
+        `Depósito: ${depKg.toFixed(2)} kg (${datos.deposito.length} caj) · Piso de Venta: ${pisoKg.toFixed(2)} kg (${datos.piso.length} caj)`;
+      document.getElementById("d93-corte-kilos").textContent = `${kgArea.toFixed(2)} kg`;
+      document.getElementById("d93-corte-cajas").textContent = `${cajasArea.length} Cajas en ${d93AreaActiva === "deposito" ? "Depósito" : "Piso de Venta"}`;
+
+      const lista = document.getElementById("d93-lista-cajas");
+      lista.innerHTML = "";
+
+      if (!cajasArea.length) {
+        lista.innerHTML = `<p style="font-size:0.76rem;color:#94a3b8;text-align:center;padding:10px;">No hay cajas ingresadas en esta área para este corte.</p>`;
+      } else {
+        cajasArea.forEach((caja, idx) => {
+          const row = document.createElement("div");
+          row.className = "d93-box-item";
+          row.innerHTML = `
+            <div>
+              <span style="font-size:0.72rem;color:#64748b;font-family:monospace;">#${cajasArea.length - idx}</span>
+              <strong style="margin-left:6px;color:#fff;">${caja.kilos.toFixed(2)} kg</strong>
+              <span style="font-size:0.7rem;color:#94a3b8;margin-left:6px;">(${caja.hora})</span>
+            </div>
+            <button type="button" onclick="eliminarCajaD93(${caja.id})" style="background:none;border:none;color:#f87171;font-weight:700;cursor:pointer;padding:2px 6px;">✕</button>
+          `;
+          lista.appendChild(row);
+        });
+      }
+      actualizarHome();
+    }
+
+    function renderizarResumenD93() {
+      const tbody = document.getElementById("d93-tabla-resumen");
+      tbody.innerHTML = "";
+      let totCajas = 0, totDepKg = 0, totPisoKg = 0, totKg = 0, totCosto = 0;
+
+      Object.keys(d93Inventario).sort().forEach((corte) => {
+        const d = d93Inventario[corte];
+        const depC = d.deposito.length;
+        const pisoC = d.piso.length;
+        const cajas = depC + pisoC;
+        const depKg = d.deposito.reduce((s, c) => s + c.kilos, 0);
+        const pisoKg = d.piso.reduce((s, c) => s + c.kilos, 0);
+        const kg = depKg + pisoKg;
+        const costoKg = d.costoKg || 0;
+        const sub = kg * costoKg;
+
+        totCajas += cajas;
+        totDepKg += depKg;
+        totPisoKg += pisoKg;
+        totKg += kg;
+        totCosto += sub;
+
+        if (cajas > 0 || costoKg > 0) {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td style="font-weight:700;">${corte}</td>
+            <td class="center" style="font-family:monospace;">${cajas}</td>
+            <td class="num" style="color:#fbbf24;font-weight:700;">${depKg.toFixed(2)}</td>
+            <td class="num" style="color:#34d399;font-weight:700;">${pisoKg.toFixed(2)}</td>
+            <td class="num" style="color:#4ade80;font-weight:800;">${kg.toFixed(2)}</td>
+            <td class="num">
+              <input type="number" value="${costoKg || ""}" placeholder="$0" onchange="actualizarCostoKgD93('${corte.replace(/'/g, "'")}', this.value)"
+                style="width:70px;background:#1e293b;border:1px solid #475569;border-radius:6px;padding:4px 6px;text-align:right;color:#fcd34d;font-weight:700;" />
+            </td>
+            <td class="num" style="font-weight:800;">${fmtCLP(sub)}</td>
+          `;
+          tbody.appendChild(tr);
+        }
+      });
+
+      document.getElementById("d93-total-cajas").textContent = totCajas;
+      document.getElementById("d93-total-kg-dep").textContent = `${totDepKg.toFixed(2)} kg`;
+      document.getElementById("d93-total-kg-piso").textContent = `${totPisoKg.toFixed(2)} kg`;
+      document.getElementById("d93-total-kilos").textContent = `${totKg.toFixed(2)} kg`;
+      document.getElementById("d93-total-costo").textContent = fmtCLP(totCosto);
+    }
+
+    function actualizarCostoKgD93(corte, val) {
+      if (!d93Inventario[corte]) return;
+      d93Inventario[corte].costoKg = Math.max(0, parseFloat(val) || 0);
+      guardarD93();
+      renderizarResumenD93();
+    }
+
+    function getRowsD93() {
+      const rows = [];
+      Object.keys(d93Inventario).sort().forEach((corte) => {
+        const d = d93Inventario[corte];
+        const depC = d.deposito.length;
+        const pisoC = d.piso.length;
+        const depKg = d.deposito.reduce((s, c) => s + c.kilos, 0);
+        const pisoKg = d.piso.reduce((s, c) => s + c.kilos, 0);
+        const totKg = depKg + pisoKg;
+
+        if ((depC + pisoC) > 0 || (d.costoKg || 0) > 0) {
+          rows.push({
+            DEPARTAMENTO: 93,
+            CORTE: corte,
+            "CAJAS DEPOSITO": depC,
+            "KG DEPOSITO": parseFloat(depKg.toFixed(2)),
+            "CAJAS PISO VENTA": pisoC,
+            "KG PISO VENTA": parseFloat(pisoKg.toFixed(2)),
+            "N° CAJAS TOTAL": depC + pisoC,
+            "KILOS NETOS TOTAL (KG)": parseFloat(totKg.toFixed(2)),
+            "COSTO POR KG ($)": d.costoKg || 0,
+            "COSTO TOTAL ($)": Math.round(totKg * (d.costoKg || 0))
+          });
+        }
+      });
+      return rows;
+    }
+
+    function exportarExcelD93() {
+      const rows = getRowsD93();
+      if (!rows.length) {
+        showToast("⚠️ No hay datos cargados en Dpto. 93");
+        return;
+      }
+      const ws = XLSX.utils.json_to_sheet(rows);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Dpto_93_Carnes");
+      XLSX.writeFile(wb, `Inventario_Costo_Dpto93_${new Date().toISOString().slice(0, 10)}.xlsx`);
+      showToast("📥 Excel Dpto. 93 descargado");
+    }
+
+    function confirmarBorrarTodoD93() {
+      if (confirm("¿Seguro que deseas reiniciar todo el inventario del Departamento 93 (Depósito y Piso de Venta)?")) {
+        resetD93Data();
+        poblarSelectCortesD93();
+        actualizarInterfazD93();
+        renderizarResumenD93();
+        showToast("🗑️ Dpto. 93 reiniciado");
+      }
+    }
+
+    // ==================== MÓDULO DPTO 94 (CONTADOR LIMPIO) ====================
+    const D94_STORAGE_KEY = "inventario_costo_dpto94_local155_v4";
+    let d94ActiveTab = "deposito";
+    let d94Counts = {};
+    let d94ModalItem = null;
+    let d94BoxItem = null;
+
+    function loadD94Counts() {
+      try { return JSON.parse(localStorage.getItem(D94_STORAGE_KEY)) || {}; } catch { return {}; }
+    }
+
+    function saveD94Counts() {
+      localStorage.setItem(D94_STORAGE_KEY, JSON.stringify(d94Counts));
+      actualizarKPIsD94();
+      actualizarHome();
+    }
+
+    function ensureRecordD94(code) {
+      if (!d94Counts[code]) {
+        d94Counts[code] = {
+          deposito: { caja: null, kg: null, und: null },
+          piso: { caja: null, kg: null, und: null },
+          unitMode: "und",
+          customQtyCaja: null
+        };
+      }
+      if (!d94Counts[code].deposito) d94Counts[code].deposito = { caja: null, kg: null, und: null };
+      if (!d94Counts[code].piso) d94Counts[code].piso = { caja: null, kg: null, und: null };
+      if (!d94Counts[code].unitMode) d94Counts[code].unitMode = "und";
+      if (d94Counts[code].customQtyCaja === undefined) d94Counts[code].customQtyCaja = null;
+      return d94Counts[code];
+    }
+
+    function getEffectiveQtyCajaD94(item) {
+      const rec = ensureRecordD94(item.item);
+      if (rec.customQtyCaja !== null && !isNaN(rec.customQtyCaja) && rec.customQtyCaja > 0) {
+        return rec.customQtyCaja;
+      }
+      return item.qtyCaja || 1;
+    }
+
+    function getSectionTotalD94(item, section) {
+      const rec = ensureRecordD94(item.item);
+      const sec = rec[section];
+      return ((sec.caja || 0) * getEffectiveQtyCajaD94(item)) + (sec.kg || 0) + (sec.und || 0);
+    }
+
+    function hasSectionCountD94(code, section) {
+      const sec = ensureRecordD94(code)[section];
+      return sec.caja !== null || sec.kg !== null || sec.und !== null;
+    }
+
+    function hasAnyCountD94(code) {
+      return hasSectionCountD94(code, "deposito") || hasSectionCountD94(code, "piso");
+    }
+
+    function setUnitValueD94(code, section, unitKey, rawVal) {
+      const rec = ensureRecordD94(code);
+      rec[section][unitKey] = (rawVal === "" || rawVal === null || isNaN(rawVal)) ? null : Math.max(0, parseFloat(rawVal));
+      saveD94Counts();
+    }
+
+    function initD94() {
+      d94Counts = loadD94Counts();
+      const lista = typeof MAESTRA_DPTO_94 !== "undefined" ? MAESTRA_DPTO_94 : [];
+      const catSel = document.getElementById("d94-category-filter");
+      [...new Set(lista.map((i) => i.cat))].sort().forEach((cat) => {
+        const opt = document.createElement("option");
+        opt.value = cat;
+        opt.textContent = cat;
+        catSel.appendChild(opt);
+      });
+      document.getElementById("d94-badge-resumen").textContent = lista.length;
+      actualizarKPIsD94();
+      renderListD94();
+    }
+
+    function getFilteredItemsD94() {
+      const lista = typeof MAESTRA_DPTO_94 !== "undefined" ? MAESTRA_DPTO_94 : [];
+      const q = document.getElementById("d94-search-input").value.trim().toLowerCase();
+      const cat = document.getElementById("d94-category-filter").value;
+      const status = document.getElementById("d94-status-filter").value;
+
+      return lista.filter((item) => {
+        if (q && !item.desc.toLowerCase().includes(q) && !item.item.includes(q) && !item.upc.includes(q)) return false;
+        if (cat !== "ALL" && item.cat !== cat) return false;
+        const counted = hasAnyCountD94(item.item);
+        if (status === "PENDING" && counted) return false;
+        if (status === "COUNTED" && !counted) return false;
+        return true;
+      });
+    }
+
+    function renderListD94() {
+      const listEl = document.getElementById("d94-count-list");
+      const summaryEl = document.getElementById("d94-summary-view");
+      const bannerEl = document.getElementById("d94-section-banner");
+
+      if (d94ActiveTab === "resumen") {
+        listEl.classList.add("hidden");
+        bannerEl.classList.add("hidden");
+        summaryEl.classList.remove("hidden");
+        renderSummaryD94();
+        return;
+      }
+
+      summaryEl.classList.add("hidden");
+      listEl.classList.remove("hidden");
+      bannerEl.classList.remove("hidden");
+
+      if (d94ActiveTab === "deposito") {
+        bannerEl.className = "section-banner banner-deposito";
+        document.getElementById("d94-banner-icon").textContent = "📦";
+        document.getElementById("d94-banner-text").innerHTML = "<strong>Modo Conteo: DEPÓSITO</strong> — Marca <strong>Caja</strong>, <strong>Kg</strong> o <strong>Unidad</strong> y anota el conteo físico real.";
+      } else {
+        bannerEl.className = "section-banner banner-piso";
+        document.getElementById("d94-banner-icon").textContent = "🛒";
+        document.getElementById("d94-banner-text").innerHTML = "<strong>Modo Conteo: PISO DE VENTAS</strong> — Marca <strong>Caja</strong>, <strong>Kg</strong> o <strong>Unidad</strong> y anota el conteo físico real.";
+      }
+
+      const items = getFilteredItemsD94();
+      listEl.innerHTML = "";
+
+      if (!items.length) {
+        listEl.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:28px;color:#64748b;background:#fff;border-radius:14px;">No se encontraron ítems con esos filtros.</div>`;
+        return;
+      }
+
+      items.forEach((item) => {
+        const rec = ensureRecordD94(item.item);
+        const mode = rec.unitMode;
+        const secData = rec[d94ActiveTab];
+        const currentVal = secData[mode];
+        const secTotal = getSectionTotalD94(item, d94ActiveTab);
+        const effCaja = getEffectiveQtyCajaD94(item);
+        const isCustomCaja = rec.customQtyCaja !== null && rec.customQtyCaja > 0;
+
+        const otherSec = d94ActiveTab === "deposito" ? "piso" : "deposito";
+        const otherLabel = d94ActiveTab === "deposito" ? "Piso" : "Depósito";
+        const otherTotal = getSectionTotalD94(item, otherSec);
+        const totalFisico = secTotal + otherTotal;
+        const isCounted = hasSectionCountD94(item.item, d94ActiveTab);
+
+        const modeLabels = {
+          caja: `Caja (x${fmtNum(effCaja)})`,
+          kg: "Kilogramos (Kg)",
+          und: "Unidades (Und)"
+        };
+
+        const card = document.createElement("article");
+        card.className = `item-card ${isCounted ? "counted" : ""}`;
+        card.innerHTML = `
+          <div class="item-header">
+            <div>
+              <div class="item-title">${item.desc}</div>
+              <div class="item-codes">ITEM: <strong>${item.item}</strong> · UPC: ${item.upc}</div>
+              <span class="item-cat">${item.cat}</span>
+            </div>
+            <div class="card-top-actions">
+              <button type="button" class="box-factor-btn ${isCustomCaja ? "custom" : ""}" data-d94editbox="${item.item}">
+                ✏️ Caja: x${fmtNum(effCaja)}${isCustomCaja ? ` (M:${item.qtyCaja})` : ""}
+              </button>
+              <button type="button" class="calc-btn" data-d94calc="${item.item}">🧮 Mixto</button>
+            </div>
+          </div>
+
+          <div class="unit-selector">
+            <button type="button" class="unit-pill ${mode === "caja" ? "active" : ""}" data-d94unit="caja" data-item="${item.item}">📦 Caja</button>
+            <button type="button" class="unit-pill ${mode === "kg" ? "active" : ""}" data-d94unit="kg" data-item="${item.item}">⚖️ Kg</button>
+            <button type="button" class="unit-pill ${mode === "und" ? "active" : ""}" data-d94unit="und" data-item="${item.item}">🔢 Unidad</button>
+          </div>
+
+          <div class="unit-breakdown">
+            <span>Caj: <strong>${fmtNum(secData.caja || 0)}</strong> (x${fmtNum(effCaja)})</span>
+            <span>Kg: <strong>${fmtNum(secData.kg || 0)}</strong></span>
+            <span>Und: <strong>${fmtNum(secData.und || 0)}</strong></span>
+          </div>
+
+          <div class="item-metrics">
+            <span>Costo Unit.<strong>${fmtCLP(item.costo)}</strong></span>
+            <span>Total Físico<strong>${fmtNum(totalFisico)}</strong></span>
+          </div>
+
+          <div class="count-controls">
+            <button type="button" class="step-btn" data-d94step="-1" data-item="${item.item}">−</button>
+            <input type="number" inputmode="decimal" step="any" class="qty-input" data-d94input="${item.item}" placeholder="${modeLabels[mode]}" value="${currentVal !== null ? currentVal : ""}" />
+            <button type="button" class="step-btn" data-d94step="1" data-item="${item.item}">+</button>
+          </div>
+
+          <div class="item-footer">
+            <span>En ${otherLabel}: <strong>${fmtNum(otherTotal)}</strong></span>
+            <span>Costo Contado: <strong>${fmtCLP(totalFisico * item.costo)}</strong></span>
+          </div>
+        `;
+        listEl.appendChild(card);
+      });
+    }
+
+    function renderSummaryD94() {
+      const lista = typeof MAESTRA_DPTO_94 !== "undefined" ? MAESTRA_DPTO_94 : [];
+      const tbody = document.getElementById("d94-summary-tbody");
+      const items = getFilteredItemsD94();
+      tbody.innerHTML = "";
+
+      let totUnidFis = 0, totCostoDep = 0, totCostoPiso = 0;
+      lista.forEach((item) => {
+        const dep = getSectionTotalD94(item, "deposito");
+        const piso = getSectionTotalD94(item, "piso");
+        totUnidFis += dep + piso;
+        totCostoDep += dep * item.costo;
+        totCostoPiso += piso * item.costo;
+      });
+
+      document.getElementById("d94-sum-unid-fis").textContent = fmtNum(totUnidFis);
+      document.getElementById("d94-sum-costo-dep").textContent = fmtCLP(totCostoDep);
+      document.getElementById("d94-sum-costo-piso").textContent = fmtCLP(totCostoPiso);
+
+      items.forEach((item) => {
+        const dep = getSectionTotalD94(item, "deposito");
+        const piso = getSectionTotalD94(item, "piso");
+        const totalFis = dep + piso;
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><strong>${item.desc}</strong><br><small style="color:#64748b">${item.item}</small></td>
+          <td class="num">${fmtNum(dep)}</td>
+          <td class="num">${fmtNum(piso)}</td>
+          <td class="num"><strong>${fmtNum(totalFis)}</strong></td>
+          <td class="num">${fmtCLP(item.costo)}</td>
+          <td class="num"><strong>${fmtCLP(totalFis * item.costo)}</strong></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function actualizarKPIsD94() {
+      const lista = typeof MAESTRA_DPTO_94 !== "undefined" ? MAESTRA_DPTO_94 : [];
+      let countedItems = 0, depCounted = 0, pisoCounted = 0, totalFisico = 0, costoContado = 0;
+
+      lista.forEach((item) => {
+        const dHas = hasSectionCountD94(item.item, "deposito");
+        const pHas = hasSectionCountD94(item.item, "piso");
+        if (dHas) depCounted++;
+        if (pHas) pisoCounted++;
+        if (dHas || pHas) countedItems++;
+
+        const f = getSectionTotalD94(item, "deposito") + getSectionTotalD94(item, "piso");
+        totalFisico += f;
+        costoContado += f * item.costo;
+      });
+
+      document.getElementById("d94-kpi-avance").textContent = `${countedItems} / ${lista.length}`;
+      document.getElementById("d94-kpi-total-fisico").textContent = fmtNum(totalFisico);
+      document.getElementById("d94-kpi-costo-contado").textContent = fmtCLP(costoContado);
+      document.getElementById("d94-badge-deposito").textContent = depCounted;
+      document.getElementById("d94-badge-piso").textContent = pisoCounted;
+    }
+
+    function openBoxModalD94(code) {
+      const lista = typeof MAESTRA_DPTO_94 !== "undefined" ? MAESTRA_DPTO_94 : [];
+      const item = lista.find((i) => i.item === code);
+      if (!item) return;
+      d94BoxItem = item;
+      const eff = getEffectiveQtyCajaD94(item);
+      document.getElementById("d94-box-modal-title").textContent = `Caja: ${item.desc}`;
+      document.getElementById("d94-box-modal-meta").textContent = `ITEM ${item.item} · Ajusta cuántas unidades o kg trae cada caja`;
+      document.getElementById("d94-box-maestra-ref").textContent = `x${fmtNum(item.qtyCaja || 1)}`;
+      document.getElementById("d94-box-custom-factor").value = eff;
+      document.getElementById("d94-box-modal").classList.remove("hidden");
+      document.getElementById("d94-box-custom-factor").focus();
+    }
+
+    function closeBoxModalD94() {
+      document.getElementById("d94-box-modal").classList.add("hidden");
+      d94BoxItem = null;
+    }
+
+    function openCalcModalD94(code) {
+      const lista = typeof MAESTRA_DPTO_94 !== "undefined" ? MAESTRA_DPTO_94 : [];
+      const item = lista.find((i) => i.item === code);
+      if (!item) return;
+      d94ModalItem = item;
+      const eff = getEffectiveQtyCajaD94(item);
+      document.getElementById("d94-modal-item-title").textContent = item.desc;
+      document.getElementById("d94-modal-item-meta").textContent = `ITEM ${item.item} · Factor Caja actual: ${fmtNum(eff)} (Maestra: ${item.qtyCaja})`;
+      document.getElementById("d94-modal-section-name").textContent = d94ActiveTab === "deposito" ? "Depósito" : "Piso de Ventas";
+      document.getElementById("d94-calc-cajas").value = "";
+      document.getElementById("d94-calc-factor").value = eff;
+      document.getElementById("d94-calc-sueltas").value = "";
+      updateCalcPreviewD94();
+      document.getElementById("d94-calc-modal").classList.remove("hidden");
+    }
+
+    function updateCalcPreviewD94() {
+      const cajas = parseFloat(document.getElementById("d94-calc-cajas").value) || 0;
+      const factor = parseFloat(document.getElementById("d94-calc-factor").value) || 0;
+      const sueltas = parseFloat(document.getElementById("d94-calc-sueltas").value) || 0;
+      const total = cajas * factor + sueltas;
+      document.getElementById("d94-calc-total-preview").textContent = fmtNum(total);
+      return total;
+    }
+
+    function closeCalcModalD94() {
+      document.getElementById("d94-calc-modal").classList.add("hidden");
+      d94ModalItem = null;
+    }
+
+    function getRowsD94() {
+      const lista = typeof MAESTRA_DPTO_94 !== "undefined" ? MAESTRA_DPTO_94 : [];
+      return lista.map((item) => {
+        const rec = ensureRecordD94(item.item);
+        const effCaja = getEffectiveQtyCajaD94(item);
+        const dep = getSectionTotalD94(item, "deposito");
+        const piso = getSectionTotalD94(item, "piso");
+        const totalFis = dep + piso;
+        return {
+          "N° DPTO": 94,
+          ITEM: Number(item.item),
+          "UPC MAESTRA": item.upc,
+          DESCRIPCION: item.desc,
+          CATEGORIA: item.cat,
+          "FACTOR CAJA MAESTRA": item.qtyCaja,
+          "FACTOR CAJA USADO": effCaja,
+          "DEP CAJ": rec.deposito.caja || 0,
+          "DEP KG": rec.deposito.kg || 0,
+          "DEP UND": rec.deposito.und || 0,
+          "CONTEO DEPOSITO": dep,
+          "PISO CAJ": rec.piso.caja || 0,
+          "PISO KG": rec.piso.kg || 0,
+          "PISO UND": rec.piso.und || 0,
+          "CONTEO PISO VENTAS": piso,
+          "TOTAL FISICO": totalFis,
+          "COSTO UNITARIO": item.costo,
+          "COSTO TOTAL FISICO": totalFis * item.costo
+        };
+      });
+    }
+
+    function exportarExcelD94() {
+      const ws = XLSX.utils.json_to_sheet(getRowsD94());
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Dpto_94_FyV");
+      XLSX.writeFile(wb, `Inventario_Costo_Dpto94_${new Date().toISOString().slice(0, 10)}.xlsx`);
+      showToast("📥 Excel Dpto. 94 descargado");
+    }
+
+    function exportarExcelAmbos() {
+      const wb = XLSX.utils.book_new();
+      const ws93 = XLSX.utils.json_to_sheet(getRowsD93());
+      const ws94 = XLSX.utils.json_to_sheet(getRowsD94());
+      XLSX.utils.book_append_sheet(wb, ws93, "Departamento_93");
+      XLSX.utils.book_append_sheet(wb, ws94, "Departamento_94");
+      XLSX.writeFile(wb, `Inventario_Costo_Dpto93_y_Dpto94_${new Date().toISOString().slice(0, 10)}.xlsx`);
+      showToast("📥 Excel General (Dpto. 93 y 94) descargado");
+    }
+
+    // ==================== EVENTOS INICIALES ====================
+    document.addEventListener("DOMContentLoaded", () => {
+      initD93();
+      initD94();
+      actualizarHome();
+
+      document.getElementById("btn-go-home").addEventListener("click", () => seleccionarModulo("home"));
+      document.getElementById("btn-export-ambos").addEventListener("click", exportarExcelAmbos);
+      document.getElementById("mod-btn-d93").addEventListener("click", () => seleccionarModulo("d93"));
+      document.getElementById("mod-btn-d94").addEventListener("click", () => seleccionarModulo("d94"));
+
+      // Eventos Dpto 94
+      document.querySelectorAll("[data-d94tab]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll("[data-d94tab]").forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          d94ActiveTab = btn.dataset.d94tab;
+          renderListD94();
+        });
+      });
+
+      const sInp = document.getElementById("d94-search-input");
+      const sClr = document.getElementById("d94-clear-search");
+      sInp.addEventListener("input", () => { sClr.classList.toggle("hidden", !sInp.value); renderListD94(); });
+      sClr.addEventListener("click", () => { sInp.value = ""; sClr.classList.add("hidden"); renderListD94(); });
+      document.getElementById("d94-category-filter").addEventListener("change", renderListD94);
+      document.getElementById("d94-status-filter").addEventListener("change", renderListD94);
+
+      const d94List = document.getElementById("d94-count-list");
+      d94List.addEventListener("input", (e) => {
+        if (e.target.matches("[data-d94input]")) {
+          const code = e.target.dataset.d94input;
+          const rec = ensureRecordD94(code);
+          setUnitValueD94(code, d94ActiveTab, rec.unitMode, e.target.value);
+          e.target.closest(".item-card").classList.toggle("counted", hasSectionCountD94(code, d94ActiveTab));
+        }
+      });
+
+      d94List.addEventListener("click", (e) => {
+        const editBox = e.target.closest("[data-d94editbox]");
+        if (editBox) { openBoxModalD94(editBox.dataset.d94editbox); return; }
+
+        const calcBtn = e.target.closest("[data-d94calc]");
+        if (calcBtn) { openCalcModalD94(calcBtn.dataset.d94calc); return; }
+
+        const unitPill = e.target.closest("[data-d94unit]");
+        if (unitPill) {
+          const rec = ensureRecordD94(unitPill.dataset.item);
+          rec.unitMode = unitPill.dataset.d94unit;
+          saveD94Counts();
+          renderListD94();
+          return;
+        }
+
+        const stepBtn = e.target.closest("[data-d94step]");
+        if (stepBtn) {
+          const code = stepBtn.dataset.item;
+          const delta = parseFloat(stepBtn.dataset.d94step);
+          const rec = ensureRecordD94(code);
+          const cur = rec[d94ActiveTab][rec.unitMode] || 0;
+          setUnitValueD94(code, d94ActiveTab, rec.unitMode, Math.max(0, cur + delta));
+          renderListD94();
+        }
+      });
+
+      document.getElementById("d94-close-box-modal").addEventListener("click", closeBoxModalD94);
+      document.getElementById("d94-box-backdrop").addEventListener("click", closeBoxModalD94);
+      document.getElementById("d94-btn-box-save").addEventListener("click", () => {
+        if (!d94BoxItem) return;
+        const val = parseFloat(document.getElementById("d94-box-custom-factor").value);
+        if (isNaN(val) || val <= 0) { showToast("⚠️ Ingresa un número mayor a 0"); return; }
+        ensureRecordD94(d94BoxItem.item).customQtyCaja = val;
+        saveD94Counts();
+        closeBoxModalD94();
+        renderListD94();
+        showToast(`📦 Caja actualizada a x${fmtNum(val)}`);
+      });
+      document.getElementById("d94-btn-box-restore").addEventListener("click", () => {
+        if (!d94BoxItem) return;
+        ensureRecordD94(d94BoxItem.item).customQtyCaja = null;
+        saveD94Counts();
+        closeBoxModalD94();
+        renderListD94();
+        showToast(`↩️ Restaurado a Maestra (x${d94BoxItem.qtyCaja})`);
+      });
+
+      ["d94-calc-cajas", "d94-calc-factor", "d94-calc-sueltas"].forEach((id) => {
+        document.getElementById(id).addEventListener("input", updateCalcPreviewD94);
+      });
+      document.getElementById("d94-close-modal").addEventListener("click", closeCalcModalD94);
+      document.getElementById("d94-calc-backdrop").addEventListener("click", closeCalcModalD94);
+      document.getElementById("d94-btn-calc-replace").addEventListener("click", () => {
+        if (!d94ModalItem) return;
+        setUnitValueD94(d94ModalItem.item, d94ActiveTab, "und", updateCalcPreviewD94());
+        closeCalcModalD94();
+        renderListD94();
+        showToast("✅ Cantidad actualizada");
+      });
+      document.getElementById("d94-btn-calc-add").addEventListener("click", () => {
+        if (!d94ModalItem) return;
+        const addVal = updateCalcPreviewD94();
+        const rec = ensureRecordD94(d94ModalItem.item);
+        setUnitValueD94(d94ModalItem.item, d94ActiveTab, "und", (rec[d94ActiveTab].und || 0) + addVal);
+        closeCalcModalD94();
+        renderListD94();
+        showToast(`➕ Sumado +${fmtNum(addVal)}`);
+      });
+
+      document.getElementById("d94-btn-export").addEventListener("click", exportarExcelD94);
+      document.getElementById("d94-btn-reset").addEventListener("click", () => {
+        if (confirm("¿Seguro que deseas borrar todo el conteo del Departamento 94?")) {
+          d94Counts = {};
+          saveD94Counts();
+          renderListD94();
+          showToast("🗑️ Dpto. 94 reiniciado");
+        }
+      });
+    });
+  </script>
+</body>
+</html>
